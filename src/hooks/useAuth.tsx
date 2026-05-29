@@ -1,39 +1,41 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/services/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
+
+type UserRole = "student" | "teacher" | "parent" | "admin";
 
 export const useAuth = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          await fetchUserRole(session.user.id);
+      async (_event, currentSession) => {
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+
+        if (currentSession?.user) {
+          await fetchUserRole(currentSession.user.id);
         } else {
           setUserRole(null);
         }
-        
+
         setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserRole(session.user.id);
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+
+      if (currentSession?.user) {
+        fetchUserRole(currentSession.user.id);
       }
-      
+
       setLoading(false);
     });
 
@@ -47,29 +49,21 @@ export const useAuth = () => {
       .eq("user_id", userId)
       .single();
 
-    if (data) {
-      setUserRole(data.role);
-      redirectToDashboard(data.role);
+    if (data?.role) {
+      const role = data.role as UserRole;
+      setUserRole(role);
+      redirectToDashboard(role);
     }
   };
 
-  const redirectToDashboard = (role: string) => {
-    switch (role) {
-      case "student":
-        navigate("/dashboard/student");
-        break;
-      case "teacher":
-        navigate("/dashboard/teacher");
-        break;
-      case "parent":
-        navigate("/dashboard/parent");
-        break;
-      case "admin":
-        navigate("/dashboard/admin");
-        break;
-      default:
-        navigate("/");
-    }
+  const redirectToDashboard = (role: UserRole) => {
+    const ROLE_ROUTES: Record<UserRole, string> = {
+      student: "/dashboard/student",
+      teacher: "/dashboard/teacher",
+      parent: "/dashboard/parent",
+      admin: "/dashboard/admin",
+    };
+    navigate(ROLE_ROUTES[role] ?? "/");
   };
 
   return { user, session, loading, userRole };

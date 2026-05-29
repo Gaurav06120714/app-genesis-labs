@@ -1,73 +1,190 @@
-# Welcome to your Lovable project
+# ATTENDO — Smart Attendance Management
 
-## Project info
+> QR-based attendance tracking for modern educational institutions. Built for students, teachers, parents, and admins.
 
-**URL**: https://lovable.dev/projects/acd61a9c-8f86-4af2-8ec4-f2b4b777c8b6
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?style=flat-square&logo=typescript)
+![React](https://img.shields.io/badge/React-18.3-61DAFB?style=flat-square&logo=react)
+![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?style=flat-square&logo=vite)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38BDF8?style=flat-square&logo=tailwindcss)
+![Supabase](https://img.shields.io/badge/Supabase-2.58-3ECF8E?style=flat-square&logo=supabase)
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## What is ATTENDO?
 
-**Use Lovable**
+ATTENDO is a production-ready SaaS attendance management platform for schools and colleges. Teachers generate expiring QR codes per class session — students scan them to mark attendance instantly. Parents receive live updates. Admins get full system visibility.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/acd61a9c-8f86-4af2-8ec4-f2b4b777c8b6) and start prompting.
+### Key Features
 
-Changes made via Lovable will be committed automatically to this repo.
+- **QR Code Attendance** — Unique, time-limited QR codes per class session (15-min expiry)
+- **Role-Based Dashboards** — Separate portals for Admin, Teacher, Student, and Parent
+- **Real-Time Records** — Attendance saved to Supabase the moment a student scans
+- **Multi-Layer Verification** — Device, Wi-Fi, and facial verification architecture
+- **Analytics & Reports** — Attendance trends, streaks, and per-class breakdowns
+- **Parent Notifications** — Instant alerts when a student misses class
+- **Dark / Light Mode** — Full theme support with system preference detection
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 18 + TypeScript |
+| Build Tool | Vite 5 |
+| Styling | Tailwind CSS 3 + shadcn/ui (Radix UI) |
+| Backend | Supabase (Auth + PostgreSQL + Realtime) |
+| State | TanStack React Query 5 |
+| Forms | React Hook Form + Zod |
+| Charts | Recharts |
+| Routing | React Router v6 |
+| Icons | Lucide React |
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Project Structure
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```
+src/
+├── components/
+│   ├── common/        # StatCard, EmptyState, SkeletonCard, ErrorBoundary
+│   ├── layout/        # DashboardLayout, ProtectedRoute
+│   └── ui/            # shadcn/ui primitives (Button, Card, Dialog…)
+├── pages/
+│   ├── landing/       # Home.tsx — marketing landing page
+│   ├── auth/          # Auth.tsx — login & signup
+│   ├── dashboard/     # Student, Teacher, Parent, Admin dashboards
+│   └── attendance/    # GenerateQR.tsx, ScanQR.tsx
+├── hooks/             # useAuth, use-mobile, use-toast
+├── services/
+│   └── supabase/      # client.ts, types.ts
+├── lib/               # utils.ts
+├── types/             # Global TypeScript types (UserRole…)
+├── App.tsx
+└── main.tsx
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+---
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+ and npm
+- A [Supabase](https://supabase.com) project
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/Gaurav06120714/app-genesis-labs.git
+cd app-genesis-labs
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure environment
+
+Create a `.env` file at the root:
+
+```env
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-public-key
+```
+
+Get these from your Supabase project → **Settings → API**.
+
+### 4. Run database migrations
+
+Open your Supabase project → **SQL Editor** and run the migration files from the `supabase/` folder in order.
+
+### 5. Start the dev server
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Open [http://localhost:8080](http://localhost:8080).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## Roles & Access
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+| Role | Access |
+|------|--------|
+| **Admin** | Full system — institutions, users, all sessions |
+| **Teacher** | Their classes, QR generation, attendance reports |
+| **Student** | Own attendance records, QR scanning |
+| **Parent** | Linked children's attendance + notifications |
 
-## What technologies are used for this project?
+Sign up and assign a role via the Supabase `user_roles` table, or use the role selector on the signup form.
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Available Scripts
 
-## How can I deploy this project?
+```bash
+npm run dev        # Start development server (localhost:8080)
+npm run build      # Production build
+npm run preview    # Preview production build locally
+npm run lint       # ESLint check
+```
 
-Simply open [Lovable](https://lovable.dev/projects/acd61a9c-8f86-4af2-8ec4-f2b4b777c8b6) and click on Share -> Publish.
+---
 
-## Can I connect a custom domain to my Lovable project?
+## Database Schema (Supabase)
 
-Yes, you can!
+| Table | Description |
+|-------|-------------|
+| `profiles` | Base user info (name, email, photo) |
+| `user_roles` | Role assignment per user |
+| `institutions` | Schools / colleges |
+| `students` | Student records with device + facial data |
+| `teachers` | Teacher records |
+| `classes` | Class definitions (subject, schedule) |
+| `class_enrollments` | Student ↔ class mapping |
+| `attendance_sessions` | QR code sessions (expiry, class, teacher) |
+| `attendance_records` | Individual attendance marks with verification flags |
+| `parent_student_links` | Parent ↔ child mapping |
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Deployment
+
+### Vercel / Netlify (recommended)
+
+```bash
+npm run build
+# Deploy the dist/ folder
+```
+
+Set the same environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) in your hosting dashboard.
+
+---
+
+## Roadmap
+
+- [ ] Real-time attendance updates via Supabase subscriptions
+- [ ] Google OAuth login
+- [ ] Camera-based QR code scanning (student mobile)
+- [ ] Facial recognition verification
+- [ ] Wi-Fi SSID validation
+- [ ] Push notifications (parent alerts)
+- [ ] CSV/PDF attendance export
+- [ ] LMS integrations (Google Classroom, Canvas)
+- [ ] Mobile app (React Native)
+
+---
+
+## Contributing
+
+Pull requests are welcome. For major changes, open an issue first.
+
+---
+
+## License
+
+MIT © [Gaurav](https://github.com/Gaurav06120714)
