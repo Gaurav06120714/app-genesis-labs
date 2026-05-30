@@ -112,11 +112,16 @@ const Auth = () => {
     }
   }, [signupData, selectedRole, toast]);
 
-  const handleGoogleAuth = useCallback(() => {
-    toast({
-      title: "Coming soon",
-      description: "Google authentication will be available shortly.",
+  const handleGoogleAuth = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
+    if (error) {
+      toast({ title: "Google sign-in failed", description: error.message, variant: "destructive" });
+    }
   }, [toast]);
 
   const handleForgotPassword = useCallback(() => {

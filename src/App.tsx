@@ -16,6 +16,7 @@ const GenerateQR = lazy(() => import("./pages/attendance/GenerateQR"));
 const ScanQR = lazy(() => import("./pages/attendance/ScanQR"));
 const ParentDashboard = lazy(() => import("./pages/dashboard/ParentDashboard"));
 const AdminDashboard = lazy(() => import("./pages/dashboard/AdminDashboard"));
+const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
@@ -62,6 +63,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route
                 path="/dashboard/student"
                 element={
