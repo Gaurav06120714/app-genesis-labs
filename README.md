@@ -22,6 +22,7 @@ ATTENDO is a production-ready SaaS attendance management platform for schools an
 - **Multi-Layer Verification** — Device, Wi-Fi, and facial verification architecture
 - **Analytics & Reports** — Attendance trends, streaks, and per-class breakdowns
 - **Parent Notifications** — Instant alerts when a student misses class
+- **Google OAuth** — One-click sign in with Google
 - **Dark / Light Mode** — Full theme support with system preference detection
 
 ---
@@ -52,7 +53,7 @@ src/
 │   └── ui/            # shadcn/ui primitives (Button, Card, Dialog…)
 ├── pages/
 │   ├── landing/       # Home.tsx — marketing landing page
-│   ├── auth/          # Auth.tsx — login & signup
+│   ├── auth/          # Auth.tsx, AuthCallback.tsx
 │   ├── dashboard/     # Student, Teacher, Parent, Admin dashboards
 │   └── attendance/    # GenerateQR.tsx, ScanQR.tsx
 ├── hooks/             # useAuth, use-mobile, use-toast
@@ -71,43 +72,117 @@ src/
 ### Prerequisites
 
 - Node.js 18+ and npm
-- A [Supabase](https://supabase.com) project
+- A [Supabase](https://supabase.com) account (free tier works)
+- A [Google Cloud](https://console.cloud.google.com) account (for Google OAuth)
 
-### 1. Clone the repo
+---
+
+## Step 1 — Clone & Install
 
 ```bash
 git clone https://github.com/Gaurav06120714/app-genesis-labs.git
 cd app-genesis-labs
-```
-
-### 2. Install dependencies
-
-```bash
 npm install
 ```
 
-### 3. Configure environment
+---
 
-Create a `.env` file at the root:
+## Step 2 — Create a Supabase Project
+
+1. Go to [https://supabase.com](https://supabase.com) and sign in
+2. Click **New project** → fill in project name (e.g. "Attendo"), set a password, choose region
+3. Wait for the project to finish provisioning (~1 min)
+
+### Get your API keys
+
+1. In your project, go to **Settings → API**
+2. Copy:
+   - **Project URL** → e.g. `https://xxxxxxxxxxx.supabase.co`
+   - **Anon / public key** → starts with `sb_publishable_...` or `eyJ...`
+
+---
+
+## Step 3 — Configure Environment Variables
+
+Create a `.env` file at the project root:
 
 ```env
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-public-key
+VITE_SUPABASE_PROJECT_ID=your-project-id
 ```
 
-Get these from your Supabase project → **Settings → API**.
+> ⚠️ Never commit `.env` to Git. It is already in `.gitignore`.
 
-### 4. Run database migrations
+---
 
-Open your Supabase project → **SQL Editor** and run the migration files from the `supabase/` folder in order.
+## Step 4 — Run Database Migrations
 
-### 5. Start the dev server
+1. In Supabase, go to **SQL Editor → New query**
+2. Paste and run the full SQL from `supabase/migrations/` (one file)
+3. This creates all 9 tables, RLS policies, roles enum, and the `handle_new_user` trigger
+
+Tables created:
+| Table | Description |
+|-------|-------------|
+| `profiles` | Base user info (name, email, photo) |
+| `user_roles` | Role assignment per user (admin/teacher/student/parent) |
+| `institutions` | Schools / colleges |
+| `students` | Student records with device + facial data |
+| `classes` | Class definitions (subject, schedule) |
+| `class_enrollments` | Student ↔ class mapping |
+| `attendance_sessions` | QR code sessions (expiry, class, teacher) |
+| `attendance_records` | Individual attendance marks with verification flags |
+| `parent_student_links` | Parent ↔ child mapping |
+
+---
+
+## Step 5 — Set Up Google OAuth (Optional)
+
+### A) Create Google OAuth credentials
+
+1. Go to [https://console.cloud.google.com](https://console.cloud.google.com)
+2. Create or select a project
+3. Go to **APIs & Services → Credentials → Create Credentials → OAuth client ID**
+4. If prompted, configure the **OAuth consent screen** first:
+   - User type: **External**
+   - Fill in app name, support email, developer email → Save
+5. Back on Create OAuth client ID:
+   - Application type: **Web application**
+   - Name: `Attendo`
+   - Under **Authorized redirect URIs**, click **Add URI** and paste:
+     ```
+     https://your-project-id.supabase.co/auth/v1/callback
+     ```
+6. Click **Create** → copy the **Client ID** and **Client Secret**
+
+### B) Enable Google in Supabase
+
+1. In Supabase → **Authentication → Sign In / Providers → Google**
+2. Toggle **Enable** on
+3. Paste your **Client ID** (in the "Client IDs" field)
+4. Paste your **Client Secret**
+5. Click **Save**
+
+### C) Add redirect URL
+
+1. In Supabase → **Authentication → URL Configuration**
+2. Under **Redirect URLs**, add:
+   ```
+   http://localhost:8080
+   http://localhost:8080/auth/callback
+   ```
+3. Save
+
+---
+
+## Step 6 — Start the Dev Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:8080](http://localhost:8080).
+Open [http://localhost:8080](http://localhost:8080)
 
 ---
 
@@ -120,7 +195,7 @@ Open [http://localhost:8080](http://localhost:8080).
 | **Student** | Own attendance records, QR scanning |
 | **Parent** | Linked children's attendance + notifications |
 
-Sign up and assign a role via the Supabase `user_roles` table, or use the role selector on the signup form.
+Select your role on the **Sign Up** form. Role is stored in `user_roles` table via Supabase RLS.
 
 ---
 
@@ -135,40 +210,29 @@ npm run lint       # ESLint check
 
 ---
 
-## Database Schema (Supabase)
-
-| Table | Description |
-|-------|-------------|
-| `profiles` | Base user info (name, email, photo) |
-| `user_roles` | Role assignment per user |
-| `institutions` | Schools / colleges |
-| `students` | Student records with device + facial data |
-| `teachers` | Teacher records |
-| `classes` | Class definitions (subject, schedule) |
-| `class_enrollments` | Student ↔ class mapping |
-| `attendance_sessions` | QR code sessions (expiry, class, teacher) |
-| `attendance_records` | Individual attendance marks with verification flags |
-| `parent_student_links` | Parent ↔ child mapping |
-
----
-
-## Deployment
-
-### Vercel / Netlify (recommended)
+## Deployment (Vercel / Netlify)
 
 ```bash
 npm run build
 # Deploy the dist/ folder
 ```
 
-Set the same environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`) in your hosting dashboard.
+Add these environment variables in your hosting dashboard:
+
+```
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+VITE_SUPABASE_PROJECT_ID
+```
+
+Also add your production URL to **Supabase → Authentication → URL Configuration → Redirect URLs**.
 
 ---
 
 ## Roadmap
 
-- [ ] Real-time attendance updates via Supabase subscriptions
-- [ ] Google OAuth login
+- [x] Google OAuth login
+- [ ] Real-time attendance updates via Supabase Realtime
 - [ ] Camera-based QR code scanning (student mobile)
 - [ ] Facial recognition verification
 - [ ] Wi-Fi SSID validation
