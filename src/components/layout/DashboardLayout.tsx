@@ -253,10 +253,11 @@ const DashboardLayout = ({
           </div>
           <div className="flex items-center gap-2">
             <button
-              className="w-9 h-9 rounded-lg hover:bg-accent flex items-center justify-center text-muted-foreground transition-colors"
+              className="w-9 h-9 rounded-lg hover:bg-accent flex items-center justify-center text-muted-foreground transition-colors relative"
               aria-label="View notifications"
             >
               <Bell className="h-4 w-4" aria-hidden="true" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-background" aria-hidden="true" />
             </button>
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
               {userName ? userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) : <User className="h-4 w-4" aria-hidden="true" />}

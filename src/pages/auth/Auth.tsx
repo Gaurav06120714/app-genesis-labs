@@ -9,8 +9,25 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import {
   CheckCircle, Eye, EyeOff, QrCode, Shield, Users,
-  TrendingUp, ArrowRight, GraduationCap
+  TrendingUp, ArrowRight, GraduationCap, Settings
 } from "lucide-react";
+
+// Password strength helper
+const getPasswordStrength = (password: string): { score: number; label: string; color: string } => {
+  if (!password) return { score: 0, label: "", color: "" };
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  const levels = [
+    { score: 1, label: "Weak", color: "bg-red-500" },
+    { score: 2, label: "Fair", color: "bg-yellow-500" },
+    { score: 3, label: "Good", color: "bg-blue-500" },
+    { score: 4, label: "Strong", color: "bg-green-500" },
+  ];
+  return levels[score - 1] ?? { score: 0, label: "", color: "" };
+};
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -36,12 +53,13 @@ const mapSupabaseError = (message: string): string => {
   return SUPABASE_ERROR_MAP[message] || message || "Something went wrong. Please try again.";
 };
 
-type Role = "student" | "teacher" | "parent";
+type Role = "student" | "teacher" | "parent" | "admin";
 
 const ROLES: { value: Role; label: string; icon: typeof GraduationCap; description: string }[] = [
   { value: "student", label: "Student", icon: GraduationCap, description: "Mark attendance via QR" },
   { value: "teacher", label: "Teacher", icon: QrCode, description: "Generate QR sessions" },
   { value: "parent", label: "Parent", icon: Users, description: "Monitor your child" },
+  { value: "admin", label: "Admin", icon: Settings, description: "Full system access" },
 ];
 
 const Auth = () => {
@@ -392,12 +410,37 @@ const Auth = () => {
                       {showSignupPw ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                     </button>
                   </div>
+                  {/* Password strength meter */}
+                  {signupData.password && (() => {
+                    const strength = getPasswordStrength(signupData.password);
+                    return (
+                      <div className="space-y-1">
+                        <div className="flex gap-1 h-1">
+                          {[1, 2, 3, 4].map((i) => (
+                            <div
+                              key={i}
+                              className={`flex-1 rounded-full transition-all duration-300 ${
+                                i <= strength.score ? strength.color : "bg-border"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <p className={`text-xs ${
+                          strength.score <= 1 ? "text-red-400" :
+                          strength.score === 2 ? "text-yellow-400" :
+                          strength.score === 3 ? "text-blue-400" : "text-green-400"
+                        }`}>
+                          {strength.label} password
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Role selector */}
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium">I am a...</Label>
-                  <div className="grid grid-cols-3 gap-2" role="group" aria-label="Select your role">
+                  <div className="grid grid-cols-2 gap-2" role="group" aria-label="Select your role">
                     {ROLES.map(({ value, label, icon: Icon, description }) => (
                       <button
                         key={value}

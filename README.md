@@ -229,14 +229,69 @@ Also add your production URL to **Supabase → Authentication → URL Configurat
 
 ---
 
+## UI / UX Design
+
+### Design System
+| Token | Value |
+|-------|-------|
+| Primary accent | Indigo → Purple gradient (`from-indigo-500 to-purple-600`) |
+| Base theme | Dark (`background` / `card` / `border` from shadcn/ui) |
+| Radius | `rounded-xl` for cards, `rounded-lg` for inputs & nav |
+| Typography | System font stack — `text-sm` body, `text-2xl font-bold` headings |
+| Icon set | Lucide React (consistent stroke width) |
+
+### Key UX Decisions
+
+**Authentication**
+- Split-panel layout on desktop: branding left (45%), form right
+- 4 roles on sign-up (Student / Teacher / Parent / Admin) in a 2×2 grid
+- Real-time password strength meter (Weak → Fair → Good → Strong) driven by length, uppercase, number, and special-character checks
+- Password visibility toggle on all password inputs
+- Google OAuth as the primary CTA above the email/password form
+- Inline Zod validation with friendly error messages mapped from Supabase error codes
+
+**Dashboard**
+- Collapsible sidebar (persisted to `localStorage`) with Tooltip fallbacks when collapsed
+- Mobile-first: drawer sidebar + bottom tab bar (max 5 items)
+- Role-coloured user badge: Indigo (student) · Blue (teacher) · Purple (parent) · Orange (admin)
+- Notification bell with unread indicator dot
+
+**Data Display**
+- Skeleton loaders (not spinners) during data fetches
+- `EmptyState` component for zero-data views
+- `StatCard` with trend arrow and delta value
+- Recharts `AreaChart` for weekly trends, `PieChart` for attendance breakdown
+
+### Colour Palette
+
+| Role / State | Colour |
+|---|---|
+| Student | `indigo-400` |
+| Teacher | `blue-400` |
+| Parent | `purple-400` |
+| Admin | `orange-400` |
+| Present / Good | `green-400/500` |
+| Absent / Error | `red-400/500` |
+| Late / Warning | `yellow-400/500` |
+| Upcoming / Neutral | `muted-foreground` |
+
+---
+
 ## Roadmap
 
 - [x] Google OAuth login
+- [x] Role-based sign-up (Student / Teacher / Parent / Admin)
+- [x] Password strength meter on sign-up
+- [x] Collapsible sidebar with localStorage persistence
+- [x] Mobile bottom navigation + drawer
+- [x] Skeleton loaders & empty states
+- [x] Notification bell indicator
 - [ ] Real-time attendance updates via Supabase Realtime
 - [ ] Camera-based QR code scanning (student mobile)
 - [ ] Facial recognition verification
 - [ ] Wi-Fi SSID validation
 - [ ] Push notifications (parent alerts)
+- [ ] Password reset email flow
 - [ ] CSV/PDF attendance export
 - [ ] LMS integrations (Google Classroom, Canvas)
 - [ ] Mobile app (React Native)
